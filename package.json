@@ -13,6 +13,9 @@
   "keywords": ["webpack","hashed", "chunk"],
   "author": "18boys@github.com",
   "license": "ISC",
+  "dependencies": {
+    "schema-utils": "^3.0.0"
+  },
   "bugs": {
     "url": "https://github.com/18boys/webpack-hashed-chunk-ids-plugin/issues"
   },

@@ -1,25 +1,25 @@
 "use strict";
 const createHash = require("webpack/lib/util/createHash");
 
-const validateOptions = require("schema-utils");
+import { validate } from 'schema-utils';
 const path = require('path')
 
 const schema = require("webpack/schemas/plugins/HashedModuleIdsPlugin.json");
-
+const PLUGIN_NAME = 'HashedChunkIdsPlugin';
 
 class HashedChunkIdsPlugin {
 
 	constructor(options) {
 		if (!options) options = {};
 
-		validateOptions(schema, options, "Hashed Chunk Ids Plugin");
+		validate(schema, options, {name: PLUGIN_NAME});
 
 		this.options = Object.assign(
 			{
 				context: null,
-				hashFunction: "md4",
-				hashDigest: "base64",
-				hashDigestLength: 4
+				hashFunction: "md5",
+				hashDigest: "hex",
+				hashDigestLength: 5 
 			},
 			options
 		);
@@ -27,10 +27,9 @@ class HashedChunkIdsPlugin {
 
 	apply(compiler) {
 		const options = this.options;
-		compiler.hooks.compilation.tap("HashedChunkIdsPlugin", compilation => {
+		compiler.hooks.compilation.tap(PLUGIN_NAME, compilation => {
 			const usedIds = new Set();
-			compilation.hooks.beforeChunkIds.tap(
-				"HashedChunkIdsPlugin",
+			compilation.hooks.beforeChunkIds.tap(PLUGIN_NAME,
         chunks => {
 					for (const chunk of chunks) {
 						if (chunk.id === null) {
@@ -38,14 +37,17 @@ class HashedChunkIdsPlugin {
                 (chunk.entryModule && chunk.entryModule.resource) ||
                 (chunk.entryModule && chunk.entryModule.name) ||
                 chunk.name
-              _chuckPath = path.relative('./', _chuckPath)
-              const hash = createHash(options.hashFunction);
-              hash.update(_chuckPath);
-              const hashId = hash.digest(options.hashDigest);
-              let len = options.hashDigestLength;
-              while (usedIds.has(hashId.substr(0, len))) len++;
-              chunk.id = hashId.substr(0, len);
-              usedIds.add(chunk.id);
+							console.log(`${PLUGIN_NAME}: chunk path: ${_chuckPath}`)
+							if (_chuckPath) {
+								_chuckPath = path.relative('./', _chuckPath)
+								const hash = createHash(options.hashFunction);
+								hash.update(_chuckPath);
+								const hashId = hash.digest(options.hashDigest);
+								let len = options.hashDigestLength;
+								while (usedIds.has(hashId.substr(0, len))) len++;
+								chunk.id = hashId.substr(0, len);
+								usedIds.add(chunk.id);
+							}
 						}
 					}
 				}
